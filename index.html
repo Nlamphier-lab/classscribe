@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClassScribe - Lecture Accessibility</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🤟 ClassScribe</h1>
+    <div id="status" class="status-offline">Offline</div>
+  </header>
+
+  <main class="container">
+    <section class="controls">
+      <button id="start-btn">🎙️ Start Listening</button>
+      <button id="stop-btn" disabled>⏹️ Stop</button>
+      <button id="clear-btn">🗑️ Clear</button>
+    </section>
+
+    <div class="workspace">
+      <!-- Live Audio Transcription Column -->
+      <section class="panel">
+        <h2>Live Transcript</h2>
+        <div id="transcript" class="content-box" placeholder="Spoken lecture text will appear here in real-time..."></div>
+      </section>
+
+      <!-- AI Structured Notes Column -->
+      <section class="panel">
+        <h2>Structured Notes</h2>
+        <div id="notes" class="content-box" placeholder="Key takeaways and summary points will generate here..."></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
