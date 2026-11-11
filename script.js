@@ -5,9 +5,12 @@ const transcriptBox = document.getElementById('transcript');
 const notesBox = document.getElementById('notes');
 const statusBadge = document.getElementById('status');
 
-// Web Speech API setup
+// Web Speech API initialization
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
+
+// Persistent session state
+let fullFinalTranscript = '';
 
 if (SpeechRecognition) {
   recognition = new SpeechRecognition();
@@ -16,16 +19,30 @@ if (SpeechRecognition) {
   recognition.lang = 'en-US';
 
   recognition.onresult = (event) => {
-    let fullTranscript = '';
+    let interimTranscript = '';
+    let currentFinalTranscript = '';
+
+    // Reconstruct the full audio record from the start of the session
     for (let i = 0; i < event.results.length; i++) {
-      fullTranscript += event.results[i][0].transcript + ' ';
+      const result = event.results[i];
+      if (result.isFinal) {
+        currentFinalTranscript += result[0].transcript + ' ';
+      } else {
+        interimTranscript += result[0].transcript;
+      }
     }
+
+    fullFinalTranscript = currentFinalTranscript;
+
+    // Display the entire session transcript (Final + Interim)
+    const entireText = fullFinalTranscript + interimTranscript;
+    transcriptBox.innerText = entireText;
     
-    // Display raw live speech stream
-    transcriptBox.innerText = fullTranscript;
-    
-    // Process transcript into structured key notes
-    extractImportantNotes(fullTranscript);
+    // Smooth auto-scroll down to follow live captions unless user scrolled up
+    autoScroll(transcriptBox);
+
+    // Build structured study notes from finalized text
+    buildStudyNotes(fullFinalTranscript);
   };
 
   recognition.onerror = (event) => {
@@ -39,6 +56,7 @@ if (SpeechRecognition) {
   alert('Web Speech API is not supported in this browser. Please use Google Chrome or Microsoft Edge.');
 }
 
+// Event Listeners
 startBtn.addEventListener('click', () => {
   if (recognition) {
     recognition.start();
@@ -54,91 +72,4 @@ stopBtn.addEventListener('click', () => {
 });
 
 clearBtn.addEventListener('click', () => {
-  transcriptBox.innerText = '';
-  notesBox.innerText = '';
-});
-
-function updateStatus(isRecording) {
-  startBtn.disabled = isRecording;
-  stopBtn.disabled = !isRecording;
-  if (isRecording) {
-    statusBadge.innerText = 'Listening...';
-    statusBadge.className = 'status-online';
-  } else {
-    statusBadge.innerText = 'Offline';
-    statusBadge.className = 'status-offline';
-  }
-}
-
-/**
- * Filters out filler speech and extracts key information using cue-phrase pattern matching
- */
-function extractImportantNotes(text) {
-  if (!text.trim()) {
-    notesBox.innerText = '';
-    return;
-  }
-
-  // Split into individual sentences or clauses
-  const sentences = text
-    .split(/(?<=[.?!])\s+|(?<=\b(?:and|so|but|now)\b)\s+/)
-    .map(s => cleanText(s.trim()))
-    .filter(s => s.length > 15); // Ignore short conversational blurbs
-
-  const keyNotes = [];
-  const definitions = [];
-  const assignments = [];
-
-  // Keywords that signal high-value lecture content
-  const priorityRegex = /\b(important|remember|exam|test|quiz|crucial|key point|make sure|note that|always|never|focus on)\b/i;
-  const definitionRegex = /\b(is defined as|refers to|means|is called|known as|defined by|concept of)\b/i;
-  const taskRegex = /\b(due|homework|read|chapter|assignment|project|for next class|by monday|by friday)\b/i;
-
-  sentences.forEach((sentence) => {
-    if (priorityRegex.test(sentence)) {
-      if (!keyNotes.includes(sentence)) keyNotes.push(sentence);
-    } else if (definitionRegex.test(sentence)) {
-      if (!definitions.includes(sentence)) definitions.push(sentence);
-    } else if (taskRegex.test(sentence)) {
-      if (!assignments.includes(sentence)) assignments.push(sentence);
-    }
-  });
-
-  // Build the formatted structured note output
-  let output = '';
-
-  if (keyNotes.length > 0) {
-    output += `⭐ KEY CONCEPTS & EXAM HIGHLIGHTS\n`;
-    output += keyNotes.map(item => `• ${capitalize(item)}`).join('\n') + '\n\n';
-  }
-
-  if (definitions.length > 0) {
-    output += `📚 DEFINITIONS & TERMS\n`;
-    output += definitions.map(item => `• ${capitalize(item)}`).join('\n') + '\n\n';
-  }
-
-  if (assignments.length > 0) {
-    output += `📌 ACTION ITEMS & ASSIGNMENTS\n`;
-    output += assignments.map(item => `• ${capitalize(item)}`).join('\n') + '\n\n';
-  }
-
-  // If no specific cue words matched yet, show clean top-level takeaways
-  if (output === '') {
-    const summarySentences = sentences.slice(-3); // Show the last few substantial points
-    output = `📝 LECTURE SUMMARY\n` + summarySentences.map(item => `• ${capitalize(item)}`).join('\n');
-  }
-
-  notesBox.innerText = output;
-}
-
-// Helper: Strip conversational filler words
-function cleanText(str) {
-  return str
-    .replace(/\b(um|uh|you know|like|basically|actually|right|so yeah)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// Helper: Capitalize sentence start
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(
+  full
