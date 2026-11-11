@@ -1,2 +1,11 @@
-# classscribe
-# ClassScribe  Real-time lecture transcription and automated note-structuring for Deaf and Hard of Hearing (DHH) students.  ## Features - Live audio capture &amp; speech-to-text - Automated note structuring &amp; summaries - Course glossary support for technical terms  ## Setup ```bash npm install &amp;&amp; npm start
+# 🤟 ClassScribe
+
+Real-time lecture captioning and note-structuring tool for Deaf and Hard of Hearing (DHH) students.
+
+## Files
+- `index.html`: UI layout
+- `style.css`: High-contrast styling
+- `script.js`: Speech recognition
+
+## Quick Start
+Open `index.html` in Chrome and click **Start Listening**.
