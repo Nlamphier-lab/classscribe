@@ -174,6 +174,23 @@ function cleanText(str) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+console.log("ClassScribe v2 loaded"); // Check Console to confirm new file is active
+
+startBtn.addEventListener('click', () => {
+  if (!recognition) return;
+
+  if (!isUserRecording) {
+    isUserRecording = true;
+    statusBadge.innerText = 'Connecting...';
+    try {
+      recognition.start();
+    } catch (err) {
+      isUserRecording = false;
+      statusBadge.innerText = 'Start Error';
+      console.error('Start failed:', err);
+    }
+  }
+});
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
